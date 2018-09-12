@@ -95,6 +95,8 @@ const mergedArgs = (defaultArgs /*: any[] */, userArgs /*: any[] */) => {
     if (replacementArg) {
       if (isObject(arg1) && isObject(replacementArg)) {
         outArgs.push(Object.assign(arg1, replacementArg))
+      } else {
+        outArgs.push(replacementArg)
       }
     } else {
       outArgs.push(arg1)
