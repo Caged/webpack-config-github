@@ -87,6 +87,8 @@ const isObject = (value) /*: any */ => value && typeof value === 'object' && val
 
 // Merge any object args, replace any other types
 const mergedArgs = (defaultArgs /*: any[] */, userArgs /*: any[] */) => {
+  if (!userArgs) return defaultArgs
+
   const outArgs = []
   for (const [idx, arg1] of defaultArgs.entries()) {
     const replacementArg = userArgs[idx]
