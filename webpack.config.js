@@ -68,6 +68,40 @@ const defaultOptions /*: InternalOptions */ = {
   cspDirectives: {}
 }
 
+const plugins = [
+  EnvironmentPlugin,
+  BabelMinifyPlugin,
+  CleanWebpackPlugin,
+  CompressionPlugin,
+  CopyWebpackPlugin,
+  ExtractTextPlugin,
+  HtmlWebpackPlugin,
+  RelayCompilerWebpackPlugin
+]
+
+for (const plugin of plugins) {
+  defaultOptions[plugin] = defaultOptions[plugin] || []
+}
+
+const isObject = (value) /*: any */ => value && typeof value === 'object' && value.constructor === Object
+
+// Merge any object args, replace any other types
+const mergedArgs = (defaultArgs /*: any[] */, userArgs /*: any[] */) => {
+  const outArgs = []
+  for (const [arg1, idx] of defaultArgs.entries()) {
+    const replacementArg = userArgs[idx]
+    if (replacementArg) {
+      if (isObject(arg1) && isObject(replacementArg)) {
+        outArgs.push(Object.assign(arg1, replacementArg))
+      }
+    } else {
+      outArgs.push(arg1)
+    }
+  }
+
+  return outArgs
+}
+
 module.exports = (env /*: string */ = 'development', options /*: Options */) => {
   // $FlowFixMe: Forcibly cast Options to InternalOptions type after initializing default values.
   const opts /*: InternalOptions */ = Object.assign({}, defaultOptions, options)
@@ -233,13 +267,20 @@ module.exports = (env /*: string */ = 'development', options /*: Options */) => 
   config.plugins = config.plugins.concat(
     Object.keys(config.entry).map(
       entry =>
-        new HtmlWebpackPlugin({
-          filename: `${entry}.html`,
-          chunks: [opts.commonChunkName, entry],
-          template: opts.template,
-          contentSecurityPolicy: buildContentSecurityPolicy({directives}),
-          minify
-        })
+        new HtmlWebpackPlugin(
+          ...mergedArgs(
+            [
+              {
+                filename: `${entry}.html`,
+                chunks: [opts.commonChunkName, entry],
+                template: opts.template,
+                contentSecurityPolicy: buildContentSecurityPolicy({directives}),
+                minify
+              }
+            ],
+            opts.HtmlWebpackPlugin
+          )
+        )
     )
   )
 
